@@ -1,4 +1,5 @@
 
+import { API_URL } from './const'
 import type {
     CheckAccountResponse,
     GreenApiCredentials,
@@ -6,7 +7,6 @@ import type {
     SendMessageInput,
     SendMessageResponse,
 } from '../types/chat'
-
 
 export class GreenApiError extends Error {
     public readonly status?: number
@@ -23,11 +23,10 @@ function createEndpoint(
     method: string,
     suffix = '',
 ): string {
-    const { apiUrl, idInstance, apiTokenInstance } = credentials
-    const baseUrl = apiUrl.replace(/\/+$/, '')
+    const { idInstance, apiTokenInstance } = credentials
 
     return (
-        `${baseUrl}/waInstance${encodeURIComponent(idInstance)}` +
+        `${API_URL}/waInstance${encodeURIComponent(idInstance)}` +
         `/${method}/${encodeURIComponent(apiTokenInstance)}${suffix}`
     )
 }
