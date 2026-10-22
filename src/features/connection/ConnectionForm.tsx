@@ -80,58 +80,26 @@ export function ConnectionForm({ onConnect }: ConnectionFormProps) {
                     className="space-y-5 rounded-2xl border border-white/10 bg-white/3 p-6"
                 >
                     <label className="block space-y-2">
-                        <span className="text-sm font-medium text-slate-300">
+                        <span className="block text-sm font-medium text-slate-300">
                             ID инстанса
                         </span>
-
                         <input
-                            value={idInstance}
-                            onChange={(event) => setIdInstance(event.target.value)}
-                            placeholder="Например, 7100000000"
-                            autoComplete="username"
-                            required
-                            disabled={loading}
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-indigo-400 disabled:opacity-50"
+                            // Оставь здесь текущие value, onChange и остальные props
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-indigo-400"
                         />
                     </label>
 
                     <label className="block space-y-2">
-                        <span className="text-sm font-medium text-slate-300">
+                        <span className="block text-sm font-medium text-slate-300">
                             API-токен
                         </span>
-
                         <input
-                            type="password"
-                            value={apiTokenInstance}
-                            onChange={(event) => setApiTokenInstance(event.target.value)}
-                            placeholder="Введи токен инстанса"
-                            autoComplete="current-password"
-                            required
-                            disabled={loading}
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-indigo-400 disabled:opacity-50"
+                            // Оставь здесь текущие value, onChange и остальные props
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-indigo-400"
                         />
                     </label>
 
-                    {error && (
-                        <p
-                            role="alert"
-                            className="rounded-xl border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-300"
-                        >
-                            {error}
-                        </p>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {loading ? 'Подключаемся…' : 'Подключить API'}
-                    </button>
-
-                    <p className="text-center text-xs leading-5 text-slate-500">
-                        Данные используются для прямого подключения к GREEN-API.
-                    </p>
+                    {/* Оставь здесь вывод ошибки и кнопку подключения */}
                 </form>
             </section>
         </main>

@@ -1,69 +1,221 @@
 # MAX Messenger
 
-A React + TypeScript single-page application for messaging through the GREEN-API MAX integration.
+Веб-приложение для обмена текстовыми сообщениями через GREEN-API. Проект разработан на React и TypeScript в рамках тестового задания на позицию Frontend Developer (React).
 
-## Overview
+## Возможности
 
-The application is designed to provide a simple interface for connecting to GREEN-API, creating conversations, sending text messages, and displaying incoming messages.
+- Подключение к GREEN-API с помощью `idInstance` и `apiTokenInstance`.
+- Проверка авторизации инстанса через `getStateInstance`.
+- Создание чата по номеру телефона через `checkAccount`.
+- Отправка текстовых сообщений через `sendMessage`.
+- Получение входящих уведомлений через `receiveNotification`.
+- Подтверждение обработки уведомлений через `deleteNotification`.
+- Отображение входящих и исходящих сообщений.
+- Обработка ошибок API и состояний загрузки.
+- Адаптивный интерфейс на Tailwind CSS.
 
-## Tech Stack
+## Технологический стек
 
 - React
 - TypeScript
 - Vite
-- TanStack Query
-- TanStack Form
-- Zod
 - Tailwind CSS
-- shadcn/ui
-- Vitest and React Testing Library
+- Zod
+- Lucide React
+- GREEN-API
 
-## Features
+## Требования
 
-- [ ] GREEN-API credentials configuration
-- [ ] Recipient phone number input and chat creation
-- [ ] Sending text messages
-- [ ] Receiving and displaying incoming messages
-- [ ] Loading, error, and empty states
-- [ ] Responsive interface
-- [ ] Automated tests
+Перед запуском установи:
 
-## Getting Started
+- Node.js — актуальную LTS-версию.
+- npm.
+- Учётные данные GREEN-API с авторизованным инстансом WhatsApp.
 
-### Requirements
+## Установка и запуск
 
-- Node.js (LTS)
-- npm
+### 1. Клонирование проекта
 
-### Installation
+Если проект уже находится на компьютере, перейди в его директорию:
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
-cd max-messenger
+cd D:\workZone\max-messenger
+```
+
+### 2. Установка зависимостей
+
+```bash
 npm install
-npm run dev
 ```
 
-### Available Scripts
+### 3. Запуск в режиме разработки
 
 ```bash
 npm run dev
-npm run build
-npm run lint
-npm run test
-npm run test:watch
 ```
 
-## Configuration
+Открой адрес, который Vite выведет в терминале, обычно:
 
-The application integrates with GREEN-API for MAX. Follow the official documentation to configure the required instance credentials.
+`http://localhost:5173`
 
-Never commit real API tokens or credentials to the repository.
+### 4. Проверка проекта
 
-## Project Status
+Проверка TypeScript и сборки:
 
-Under active development as part of a React frontend developer technical assignment.
+```bash
+npm run build
+```
 
-## License
+Проверка линтером:
 
-Created for demonstration and evaluation purposes.
+```bash
+npm run lint
+```
+
+Для запуска тестов, если они настроены в проекте:
+
+```bash
+npm run test
+```
+
+## Подключение GREEN-API
+
+Для работы приложения необходимы `idInstance` и `apiTokenInstance`. Они вводятся в форме подключения внутри приложения.
+
+### Шаг 1. Получи учётные данные
+
+1. Открой [личный кабинет GREEN-API](https://console.green-api.com/).
+2. Создай или выбери свой инстанс.
+3. Найди его идентификатор `idInstance` и токен `apiTokenInstance`.
+4. Подключи WhatsApp согласно инструкции GREEN-API.
+5. Убедись, что инстанс имеет статус `authorized`.
+
+Для работы с WhatsApp может потребоваться отсканировать QR-код в личном кабинете.
+
+### Шаг 2. Подключи приложение
+
+1. Запусти MAX Messenger.
+2. Введи `idInstance`.
+3. Введи `apiTokenInstance`.
+4. Нажми **«Подключить API»**.
+5. Приложение выполнит запрос `getStateInstance`.
+6. При статусе `authorized` откроется экран чата.
+
+Токен является секретными данными. Не публикуй его в репозитории, README, скриншотах или сообщениях.
+
+### Шаг 3. Создай чат
+
+1. Введи номер собеседника в международном формате, например `+7XXXXXXXXXX`.
+2. Нажми **«Создать чат»**.
+3. Приложение выполнит `checkAccount`.
+4. Если аккаунт найден, приложение выберет соответствующий чат.
+
+Проверка номера не гарантирует, что собеседник доступен в данный момент.
+
+### Шаг 4. Отправь сообщение
+
+1. Введи текст в поле сообщения.
+2. Нажми **«Отправить»**.
+3. Приложение вызовет `sendMessage`.
+4. После успешного ответа отправленное сообщение отобразится в переписке.
+
+### Шаг 5. Получи входящее сообщение
+
+1. Убедись, что инстанс авторизован и получение уведомлений доступно.
+2. Напиши на подключённый WhatsApp с другого устройства или аккаунта.
+3. Приложение получает уведомления через `receiveNotification`.
+4. Входящее текстовое сообщение обрабатывается и добавляется в открытый чат.
+5. После обработки приложение вызывает `deleteNotification`, чтобы подтвердить получение уведомления.
+
+Для работы получения сообщений через HTTP API необходимо учитывать настройки уведомлений и webhook в GREEN-API.
+
+## Используемые методы GREEN-API
+
+| Метод | Назначение |
+|---|---|
+| `getStateInstance` | Проверка состояния инстанса |
+| `checkAccount` | Проверка номера и получение идентификатора чата |
+| `sendMessage` | Отправка текстового сообщения |
+| `receiveNotification` | Получение входящего уведомления |
+| `deleteNotification` | Подтверждение обработки уведомления |
+
+## Структура проекта
+
+```text
+src/
+├── api/
+│   ├── api.ts
+│   ├── client.ts
+│   └── const.ts
+├── features/
+│   ├── connection/
+│   │   └── ConnectionForm.tsx
+│   └── chat/
+│       ├── ChatScreen.tsx
+│       ├── parseIncomingMessage.ts
+│       └── useIncomingMessages.ts
+├── services/
+│   └── greenApi/
+│       ├── checkAccount.service.ts
+│       ├── sendMessage.service.ts
+│       ├── receiveNotification.service.ts
+│       ├── deleteNotification.service.ts
+│       └── getInstanceState.service.ts
+├── types/
+│   ├── chat.ts
+│   └── greenApi.ts
+├── App.tsx
+└── main.tsx
+```
+
+Фактическая структура может содержать дополнительные файлы.
+
+### Архитектура
+
+- `api/api.ts` — единый фасад API, через который компоненты вызывают методы GREEN-API.
+- `api/client.ts` — общий HTTP-клиент, обработка ответов и ошибок.
+- `services/greenApi/` — отдельная реализация каждого метода GREEN-API.
+- `features/connection/` — интерфейс подключения и проверки авторизации.
+- `features/chat/` — интерфейс чата, обработка входящих уведомлений и отображение сообщений.
+- `types/` — типы TypeScript для данных API и сообщений.
+
+Компоненты интерфейса используют единый объект `API`, например `API.sendMessage()` и `API.receiveNotification()`. Реализации методов находятся в отдельных сервисных файлах.
+
+## Обработка ошибок
+
+Приложение должно корректно обрабатывать следующие ситуации:
+
+- Некорректные учётные данные.
+- Неавторизованный инстанс.
+- Недоступность сети или API.
+- Ошибки отправки сообщений.
+- Отсутствие найденного аккаунта.
+- Некорректный ответ API.
+
+Если запрос завершается ошибкой, проверь статус инстанса, учётные данные и доступность сети.
+
+## Безопасность
+
+- Не добавляй реальные токены в исходный код.
+- Не публикуй токены в GitHub.
+- Не передавай учётные данные посторонним.
+- Используй тестовый инстанс и собственные учётные данные для проверки.
+
+В текущей реализации учётные данные вводятся в интерфейсе и используются браузером для запросов к GREEN-API. Для промышленного развёртывания следует отдельно оценить риски хранения и использования токена на клиенте.
+
+## Ограничения текущей версии
+
+- Для отправки и получения сообщений необходим работающий и авторизованный инстанс GREEN-API.
+- Реализована работа с текстовыми сообщениями; другие типы сообщений требуют отдельной обработки.
+- История переписки в текущей версии хранится в состоянии интерфейса и не гарантирует сохранение после перезагрузки страницы.
+- Полноценное сохранение нескольких чатов, долговременная история и серверное хранение данных требуют отдельной реализации.
+
+## Цель проекта
+
+Создать минималистичный веб-мессенджер с использованием React и TypeScript, подключённый к GREEN-API, с отправкой и получением текстовых сообщений через HTTP API и разделением интерфейса, бизнес-логики и сервисов.
+
+---
+
+**Тестовое задание:** Frontend Developer (React)  
+**Проект:** MAX Messenger  
+**API:** GREEN-API
