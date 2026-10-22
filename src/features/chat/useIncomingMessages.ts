@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from 'react'
 import { API } from '../../api/api'
 import type {
@@ -30,7 +29,6 @@ export function useIncomingMessages({
         if (!credentials) return
 
         const activeCredentials = credentials
-        const processedReceipts = new Set<number>()
         let stopped = false
 
         async function poll() {
@@ -40,29 +38,23 @@ export function useIncomingMessages({
                         await API.receiveNotification(activeCredentials)
 
                     if (stopped) return
-                    if (!notification) continue
-
-                    if (!processedReceipts.has(notification.receiptId)) {
-                        const parsed = parseIncomingMessage(notification)
-
-                        if (parsed) {
-                            onMessageRef.current(parsed)
-                        }
-
-                        processedReceipts.add(notification.receiptId)
+                    if (!notification) {
+                        await new Promise((resolve) => setTimeout(resolve, 1500))
+                        continue
                     }
 
+                    const parsed = parseIncomingMessage(notification)
+                    if (parsed) {
+                        onMessageRef.current(parsed)
+                    }
                     await API.deleteNotification(
                         activeCredentials,
                         notification.receiptId,
                     )
-
-                    processedReceipts.delete(notification.receiptId)
                 } catch (error) {
                     if (stopped) return
-
                     console.error('Ошибка получения сообщений:', error)
-                    await new Promise((resolve) => setTimeout(resolve, 2000))
+                    await new Promise((resolve) => setTimeout(resolve, 3000))
                 }
             }
         }

@@ -1,5 +1,4 @@
-
-import { useState, useCallback, type FormEvent } from 'react'
+import { useState, useCallback, type FormEvent, useEffect, useRef } from 'react'
 import type { GreenApiCredentials } from '../../types/greenApi'
 import { useIncomingMessages } from './useIncomingMessages'
 import { API } from '../../api/api'
@@ -14,6 +13,7 @@ interface LocalMessage {
     text: string
     direction: 'incoming' | 'outgoing'
     timestamp: number
+    chatId: string
 }
 
 export function ChatScreen({
@@ -28,6 +28,12 @@ export function ChatScreen({
     const [sending, setSending] = useState(false)
     const [error, setError] = useState('')
     const [status, setStatus] = useState('Выбери собеседника')
+    
+    const messagesEndRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [messages, chatId])
 
     const handleIncomingMessage = useCallback(
         (incoming: {
@@ -37,18 +43,17 @@ export function ChatScreen({
             timestamp: number
         }) => {
             setMessages((current) => {
-                if (incoming.chatId !== chatId) return current
-
                 if (current.some((item) => item.id === incoming.id)) {
                     return current
                 }
-
+                
                 return [
                     ...current,
                     {
                         id: incoming.id,
                         text: incoming.text,
                         direction: 'incoming',
+                        chatId: incoming.chatId,
                         timestamp:
                             incoming.timestamp < 1_000_000_000_000
                                 ? incoming.timestamp * 1000
@@ -57,7 +62,7 @@ export function ChatScreen({
                 ]
             })
         },
-        [chatId],
+        [],
     )
 
     useIncomingMessages({
@@ -79,7 +84,6 @@ export function ChatScreen({
             }
 
             setChatId(account.chatId)
-            setMessages([])
             setStatus(phoneNumber)
             setPhoneNumber('')
         } catch (err) {
@@ -102,9 +106,9 @@ export function ChatScreen({
 
         setError('')
         setSending(true)
+        const text = message.trim()
 
         try {
-            const text = message.trim()
             const result = await API.sendMessage(credentials, {
                 chatId,
                 message: text,
@@ -117,6 +121,7 @@ export function ChatScreen({
                     text,
                     direction: 'outgoing',
                     timestamp: Date.now(),
+                    chatId: chatId,
                 },
             ])
 
@@ -131,6 +136,8 @@ export function ChatScreen({
             setSending(false)
         }
     }
+
+    const currentChatMessages = messages.filter((item) => item.chatId === chatId)
 
     return (
         <main className="flex min-h-screen flex-col bg-[#0b0d12] text-slate-100 md:flex-row">
@@ -196,7 +203,7 @@ export function ChatScreen({
                         </p>
                     )}
 
-                    {messages.map((item) => (
+                    {chatId && currentChatMessages.map((item) => (
                         <div
                             key={item.id}
                             className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${item.direction === 'outgoing'
@@ -215,6 +222,7 @@ export function ChatScreen({
                             </p>
                         </div>
                     ))}
+                    <div ref={messagesEndRef} />
                 </div>
 
                 {error && (
