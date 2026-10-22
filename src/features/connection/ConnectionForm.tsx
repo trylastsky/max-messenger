@@ -1,4 +1,3 @@
-
 import { useState, type FormEvent } from 'react'
 import { z } from 'zod'
 import { API } from '../../api/api'
@@ -9,8 +8,8 @@ interface ConnectionFormProps {
 }
 
 const credentialsSchema = z.object({
-    idInstance: z.string().trim().min(1, 'Введи ID инстанса'),
-    apiTokenInstance: z.string().trim().min(1, 'Введи API-токен'),
+    idInstance: z.string().trim().min(1, 'Введите ID инстанса'),
+    apiTokenInstance: z.string().trim().min(1, 'Введите API-токен'),
 })
 
 export function ConnectionForm({ onConnect }: ConnectionFormProps) {
@@ -29,15 +28,14 @@ export function ConnectionForm({ onConnect }: ConnectionFormProps) {
         })
 
         if (!parsed.success) {
-            setError(parsed.error.issues[0]?.message ?? 'Проверь введённые данные')
+            setError(parsed.error.issues[0]?.message ?? 'Проверьте введённые данные')
             return
         }
 
-        const credentials = parsed.data
         setLoading(true)
 
         try {
-            const result = await API.getInstanceState(credentials)
+            const result = await API.getInstanceState(parsed.data)
 
             if (result.stateInstance !== 'authorized') {
                 setError(
@@ -46,7 +44,7 @@ export function ConnectionForm({ onConnect }: ConnectionFormProps) {
                 return
             }
 
-            onConnect(credentials)
+            onConnect(parsed.data)
         } catch (err) {
             setError(
                 err instanceof Error
@@ -63,7 +61,9 @@ export function ConnectionForm({ onConnect }: ConnectionFormProps) {
             <section className="w-full max-w-md">
                 <div className="mb-8 text-center">
                     <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
-                        <span className="text-2xl font-bold text-indigo-400">M</span>
+                        <span className="text-2xl font-bold text-indigo-400">
+                            M
+                        </span>
                     </div>
 
                     <h1 className="text-3xl font-semibold tracking-tight">
@@ -71,21 +71,27 @@ export function ConnectionForm({ onConnect }: ConnectionFormProps) {
                     </h1>
 
                     <p className="mt-3 text-sm leading-6 text-slate-400">
-                        Подключи GREEN-API, чтобы отправлять и получать сообщения.
+                        Подключите GREEN-API, чтобы отправлять и получать сообщения.
                     </p>
                 </div>
 
                 <form
                     onSubmit={handleSubmit}
-                    className="space-y-5 rounded-2xl border border-white/10 bg-white/3 p-6"
+                    className="space-y-5 rounded-2xl border border-white/10 bg-white/[0.03] p-6"
                 >
                     <label className="block space-y-2">
                         <span className="block text-sm font-medium text-slate-300">
                             ID инстанса
                         </span>
                         <input
-                            // Оставь здесь текущие value, onChange и остальные props
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-indigo-400"
+                            type="text"
+                            value={idInstance}
+                            onChange={(event) => setIdInstance(event.target.value)}
+                            placeholder="Например, 7100000000"
+                            autoComplete="username"
+                            required
+                            disabled={loading}
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-indigo-400 disabled:opacity-50"
                         />
                     </label>
 
@@ -94,12 +100,39 @@ export function ConnectionForm({ onConnect }: ConnectionFormProps) {
                             API-токен
                         </span>
                         <input
-                            // Оставь здесь текущие value, onChange и остальные props
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-indigo-400"
+                            type="password"
+                            value={apiTokenInstance}
+                            onChange={(event) =>
+                                setApiTokenInstance(event.target.value)
+                            }
+                            placeholder="Введите токен инстанса"
+                            autoComplete="current-password"
+                            required
+                            disabled={loading}
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-indigo-400 disabled:opacity-50"
                         />
                     </label>
 
-                    {/* Оставь здесь вывод ошибки и кнопку подключения */}
+                    {error && (
+                        <p
+                            role="alert"
+                            className="rounded-xl border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-300"
+                        >
+                            {error}
+                        </p>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {loading ? 'Подключение...' : 'Подключить API'}
+                    </button>
+
+                    <p className="text-center text-xs leading-5 text-slate-500">
+                        Учётные данные используются для прямого подключения к GREEN-API.
+                    </p>
                 </form>
             </section>
         </main>
