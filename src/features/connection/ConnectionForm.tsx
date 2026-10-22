@@ -1,114 +1,139 @@
 
-import { useState, type SubmitEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { z } from 'zod'
-import type { GreenApiCredentials } from '../../types/chat'
-
-const connectionSchema = z.object({
-    idInstance: z.string().trim().min(1, 'Введи ID инстанса'),
-    apiTokenInstance: z
-        .string()
-        .trim()
-        .min(1, 'Введи API-токен'),
-})
+import { API } from '../../api/api'
+import type { GreenApiCredentials } from '../../types/greenApi'
 
 interface ConnectionFormProps {
     onConnect: (credentials: GreenApiCredentials) => void
 }
 
+const credentialsSchema = z.object({
+    idInstance: z.string().trim().min(1, 'Введи ID инстанса'),
+    apiTokenInstance: z.string().trim().min(1, 'Введи API-токен'),
+})
+
 export function ConnectionForm({ onConnect }: ConnectionFormProps) {
     const [idInstance, setIdInstance] = useState('')
     const [apiTokenInstance, setApiTokenInstance] = useState('')
+    const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
-    function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
         setError('')
 
-        const result = connectionSchema.safeParse({
+        const parsed = credentialsSchema.safeParse({
             idInstance,
             apiTokenInstance,
         })
 
-        if (!result.success) {
-            setError(
-                result.error.issues[0]?.message ??
-                'Проверь введённые данные',
-            )
+        if (!parsed.success) {
+            setError(parsed.error.issues[0]?.message ?? 'Проверь введённые данные')
             return
         }
 
-        onConnect(result.data)
+        const credentials = parsed.data
+        setLoading(true)
+
+        try {
+            const result = await API.getInstanceState(credentials)
+
+            if (result.stateInstance !== 'authorized') {
+                setError(
+                    `Инстанс не авторизован. Текущий статус: ${result.stateInstance}`,
+                )
+                return
+            }
+
+            onConnect(credentials)
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Не удалось подключиться к GREEN-API',
+            )
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
         <main className="flex min-h-screen items-center justify-center bg-[#0b0d12] p-6 text-slate-100">
-            <form
-                onSubmit={handleSubmit}
-                className="w-full max-w-sm space-y-5 rounded-2xl border border-white/10 bg-white/3 p-6"
-            >
-                <header className="space-y-2">
-                    <h1 className="text-2xl font-semibold tracking-tight">
+            <section className="w-full max-w-md">
+                <div className="mb-8 text-center">
+                    <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+                        <span className="text-2xl font-bold text-indigo-400">M</span>
+                    </div>
+
+                    <h1 className="text-3xl font-semibold tracking-tight">
                         MAX Messenger
                     </h1>
 
-                    <p className="text-sm leading-6 text-slate-400">
-                        Подключение через GREEN-API
+                    <p className="mt-3 text-sm leading-6 text-slate-400">
+                        Подключи GREEN-API, чтобы отправлять и получать сообщения.
                     </p>
-                </header>
+                </div>
 
-                <label className="block space-y-2">
-                    <span className="text-sm text-slate-300">
-                        ID инстанса
-                    </span>
-
-                    <input
-                        name="idInstance"
-                        value={idInstance}
-                        onChange={(event) => setIdInstance(event.target.value)}
-                        autoComplete="off"
-                        required
-                        className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-400"
-                        placeholder="Введите idInstance"
-                    />
-                </label>
-
-                <label className="block space-y-2">
-                    <span className="text-sm text-slate-300">
-                        API-токен
-                    </span>
-
-                    <input
-                        name="apiTokenInstance"
-                        type="password"
-                        value={apiTokenInstance}
-                        onChange={(event) =>
-                            setApiTokenInstance(event.target.value)
-                        }
-                        autoComplete="new-password"
-                        required
-                        className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-400"
-                        placeholder="Введите apiTokenInstance"
-                    />
-                </label>
-
-                {error && (
-                    <p role="alert" className="text-sm text-red-400">
-                        {error}
-                    </p>
-                )}
-
-                <button
-                    type="submit"
-                    className="w-full rounded-lg bg-indigo-500 px-4 py-2.5 text-sm font-medium transition hover:bg-indigo-400"
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-5 rounded-2xl border border-white/10 bg-white/3 p-6"
                 >
-                    Продолжить
-                </button>
+                    <label className="block space-y-2">
+                        <span className="text-sm font-medium text-slate-300">
+                            ID инстанса
+                        </span>
 
-                <p className="text-xs leading-5 text-slate-500">
-                    Используй данные своего инстанса GREEN-API. Не публикуй
-                    API-токен в репозитории.
-                </p>
-            </form>
+                        <input
+                            value={idInstance}
+                            onChange={(event) => setIdInstance(event.target.value)}
+                            placeholder="Например, 7100000000"
+                            autoComplete="username"
+                            required
+                            disabled={loading}
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-indigo-400 disabled:opacity-50"
+                        />
+                    </label>
+
+                    <label className="block space-y-2">
+                        <span className="text-sm font-medium text-slate-300">
+                            API-токен
+                        </span>
+
+                        <input
+                            type="password"
+                            value={apiTokenInstance}
+                            onChange={(event) => setApiTokenInstance(event.target.value)}
+                            placeholder="Введи токен инстанса"
+                            autoComplete="current-password"
+                            required
+                            disabled={loading}
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none transition focus:border-indigo-400 disabled:opacity-50"
+                        />
+                    </label>
+
+                    {error && (
+                        <p
+                            role="alert"
+                            className="rounded-xl border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-300"
+                        >
+                            {error}
+                        </p>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {loading ? 'Подключаемся…' : 'Подключить API'}
+                    </button>
+
+                    <p className="text-center text-xs leading-5 text-slate-500">
+                        Данные используются для прямого подключения к GREEN-API.
+                    </p>
+                </form>
+            </section>
         </main>
     )
 }
