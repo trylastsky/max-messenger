@@ -6,10 +6,10 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-      port: 5173,
-      strictPort: true,
+    port: 5173,
+    strictPort: true,
   },
   build: {
-      sourcemap: false,
+    sourcemap: false,
   },
 })
