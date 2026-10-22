@@ -1,29 +1,16 @@
 import { useEffect, useRef } from 'react'
 import { API } from '../../api/api'
-import type {
-    GreenApiCredentials,
-    GreenApiNotification,
-} from '../../types/greenApi'
+import { useChat } from '../../context/ChatContext'
+import type { GreenApiNotification } from '../../types/greenApi'
 import { parseIncomingMessage } from './parseIncomingMessage'
 
-type ParsedMessage = NonNullable<
-    ReturnType<typeof parseIncomingMessage>
->
-
-interface UseIncomingMessagesOptions {
-    credentials: GreenApiCredentials | null
-    onMessage: (message: ParsedMessage) => void
-}
-
-export function useIncomingMessages({
-    credentials,
-    onMessage,
-}: UseIncomingMessagesOptions) {
-    const onMessageRef = useRef(onMessage)
-
+export function useIncomingMessages(): void {
+    const { credentials, addIncomingMessage } = useChat()
+    const addMessageRef = useRef(addIncomingMessage)
+    
     useEffect(() => {
-        onMessageRef.current = onMessage
-    }, [onMessage])
+        addMessageRef.current = addIncomingMessage
+    }, [addIncomingMessage])
 
     useEffect(() => {
         if (!credentials) return
@@ -39,14 +26,14 @@ export function useIncomingMessages({
 
                     if (stopped) return
                     if (!notification) {
-                        await new Promise((resolve) => setTimeout(resolve, 1500))
                         continue
                     }
 
                     const parsed = parseIncomingMessage(notification)
                     if (parsed) {
-                        onMessageRef.current(parsed)
+                        addMessageRef.current(parsed)
                     }
+
                     await API.deleteNotification(
                         activeCredentials,
                         notification.receiptId,
@@ -54,7 +41,7 @@ export function useIncomingMessages({
                 } catch (error) {
                     if (stopped) return
                     console.error('Ошибка получения сообщений:', error)
-                    await new Promise((resolve) => setTimeout(resolve, 3000))
+                    await new Promise((resolve) => setTimeout(resolve, 5000))
                 }
             }
         }

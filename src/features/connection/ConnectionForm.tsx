@@ -77,7 +77,7 @@ export function ConnectionForm({ onConnect }: ConnectionFormProps) {
 
                 <form
                     onSubmit={handleSubmit}
-                    className="space-y-5 rounded-2xl border border-white/10 bg-white/[0.03] p-6"
+                    className="space-y-5 rounded-2xl border border-white/10 bg-white/3 p-6"
                 >
                     <label className="block space-y-2">
                         <span className="block text-sm font-medium text-slate-300">
